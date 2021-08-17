@@ -1,0 +1,18 @@
+{% extends 'firstApp/base.html' %}
+
+{% block body_block %}
+<div class="container">
+  <h2>Please Login:</h2>
+  <h3>(Must be SuperUser, please check with the site admin)</h3>
+  {% if form.errors %}
+    <p>Your username and password did not match</p>
+  {% endif %}
+  <form action="{% url 'login' %}" method="POST">
+    {% csrf_token %}
+    {{form.as_p}}
+
+    <input type="submit" class='btn btn-primary' value="login">
+    <input type="hidden" name="next" value="{{next}}">
+  </form>
+</div>
+{% endblock %}

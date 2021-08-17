@@ -1,0 +1,19 @@
+#jumboSearch{
+  position: relative;
+  top:60px;
+}
+#firstForm{
+  /* border: 10px solid #ABCA99; */
+  position: relative;
+  left: 30px;
+}
+#firstInputGroup{
+  border: 3px solid #ABCA99;
+}
+#searchBar1{
+  width: 700px;
+  /* width: 100%; */
+}
+h2{
+  color:red;
+}

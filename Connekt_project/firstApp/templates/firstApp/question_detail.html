@@ -1,0 +1,40 @@
+{% extends "firstApp/base2.html" %}
+{% block body_block %}
+<div class="p-5 mb-4 bg-light rounded-3">
+      <div class="container-fluid py-5">
+        <h1 class="display-5 fw-bold color-me">{{question.title}}</h1>
+        <p>Crated Date: {{question.created_date}}</p>
+        <p>Price: {{question.price}}</p>
+        <p>Field: {{question.field_type}}</p>
+        <p>{{question.text}}</p>
+      </div>
+      <div class="container">
+        <a class="btn btn-success" href="{% url 'firstApp:home' %}">Go Back</a>
+      {%if question.progress_type == 'Archived' %}
+
+      {%else%}
+      <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal2">
+        Archive
+      </button>
+      {%endif%}
+      </div>
+    </div>
+    <div class="modal fade" id="exampleModal2" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            Are you sure you would like to archive the question?
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <a class="btn btn-danger" href="{% url 'firstApp:archive' pk=question.id %}">Archive</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+{% endblock %}

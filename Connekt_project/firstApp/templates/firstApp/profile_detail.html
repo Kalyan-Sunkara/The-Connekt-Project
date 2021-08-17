@@ -1,0 +1,14 @@
+{% extends "firstApp/base2.html" %}
+{% block body_block %}
+<div class="p-5 mb-4 bg-light rounded-3">
+      <div class="container-fluid py-5">
+        {% if profile.profile_pic %}
+        <img class="image-rounded" height="100px" width="100px" src="{{profile.profile_pic.url}}" alt="">
+        {% else %}
+        <i class="bi-person-circle h2"></i>
+        {% endif %}
+        <h1 class="display-5 fw-bold color-me">{{profile.user.username}}</h1>
+        <p>A meaningful description of me!</p>
+      </div>
+    </div>
+{% endblock %}

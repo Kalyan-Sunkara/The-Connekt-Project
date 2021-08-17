@@ -1,0 +1,63 @@
+{% extends "firstApp/base2.html" %}
+{% block body_block %}
+
+<div class="p-5 mb-4 bg-light rounded-3">
+      <div class="container-fluid py-5">
+        <h1 class="display-5 fw-bold color-me">Post a Question</h1>
+        <div class="dropend">
+          <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+            Dropdown button
+          </button>
+          <form class="dropdown-menu" action="{% url 'firstApp:makePost'%}" method="POST">
+            {% csrf_token %}
+            {{form.as_p}}
+            <input class="btn btn-success" type="submit" name="" value="Post">
+          </form>
+        </div>
+        <div class="container">
+          <div class="centerstage">
+            <h3>Active</h3>
+            <ul>
+              {% for question in active_questions %}
+              <div class="whole-post" onclick="location.href = {{question.id}}">
+                <div class="question-list-item">
+              <h4>{{question.title}}</h4>
+              </div>
+              </div>
+              {%empty%}
+              <p>No Active Questions!</p>
+              {% endfor %}
+            </ul>
+          </div>
+          <div class="centerstage">
+            <h3>Pending</h3>
+            <ul>
+              {% for question in pending_questions %}
+              <div class="whole-post" onclick="location.href = {{question.id}}">
+                <div class="question-list-item">
+              <h4>{{question.title}}</h4>
+              </div>
+              </div>
+              {%empty%}
+              <p>No Pending Questions!</p>
+              {% endfor %}
+            </ul>
+          </div>
+          <div class="centerstage">
+            <h3>Archived</h3>
+            <ol>
+              {% for question in archived_questions %}
+              <div class="whole-post" onclick="location.href = {{question.id}}">
+                <div class="question-list-item">
+              <h4>{{question.title}}</h4>
+              </div>
+              </div>
+              {%empty%}
+              <p>No Archived Questions!</p>
+              {% endfor %}
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+{% endblock %}
