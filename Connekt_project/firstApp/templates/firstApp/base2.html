@@ -19,9 +19,15 @@
                     </a>
                     <ul class="nav nav-pills nav-flush flex-sm-column flex-row flex-nowrap mb-auto mx-auto text-center align-items-center">
                         <li class="nav-item">
+                            {% if profile.user_type == 'User' %}
                             <a href="{% url 'firstApp:home'%}" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Home">
                                 <i class="bi-house fs-1"></i>
                             </a>
+                            {%else%}
+                            <a href="{% url 'firstApp:homeSpecialist'%}" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Home">
+                                <i class="bi-house fs-1"></i>
+                            </a>
+                            {% endif %}
                         </li>
                         <li>
                             <a href="#" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Products">

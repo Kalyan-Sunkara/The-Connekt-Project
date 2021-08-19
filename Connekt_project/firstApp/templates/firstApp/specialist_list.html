@@ -1,0 +1,24 @@
+{% extends "firstApp/base2.html" %}
+{% block body_block %}
+<div class="container">
+
+<div class="p-5 mb-4 bg-light rounded-3">
+      <div class="container-fluid py-5">
+        <h1 class="display-5 fw-bold color-me">Active</h1>
+        <div class="centerstage">
+          <ul>
+            {% for question in questions %}
+            <div class="whole-post" onclick="location.href = {{question.id}}">
+              <div class="question-list-item">
+            <h4>{{question.title}}</h4>
+            </div>
+            </div>
+            {%empty%}
+            <p>No Questions!</p>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

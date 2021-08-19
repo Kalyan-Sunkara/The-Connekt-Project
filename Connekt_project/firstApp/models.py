@@ -5,13 +5,13 @@ from django.utils import timezone
 
 class UserProfileInfo(models.Model):
     user = models.OneToOneField(User,on_delete=models.CASCADE)
-
+    FIELD = models.TextChoices('FIELDTYPE', 'Medical Engineering Education Home General')
     #additional
     USERTYPE = models.TextChoices('USERTYPE', 'User Specialist')
     profile_pic = models.ImageField(upload_to='profile_pics',blank=True)
     user_type = models.CharField(choices=USERTYPE.choices, max_length=10, default="User")
+    field = models.CharField(choices=FIELD.choices, max_length=12, default="General")
     slug = models.SlugField(null=True)
-
     def get_type(self):
         return self.user.user_type
     def __str__(self):
@@ -28,6 +28,10 @@ class Question(models.Model):
     field_type = models.CharField(choices=FIELDTYPE.choices, max_length=12, default="General")
     progress_type = models.CharField(choices=PROGRESSTYPE.choices, max_length=12, default="Pending")
 
+    def same_user(self, newAuthor):
+        if self.author != newAuthor:
+            return False
+        return True
     def check_archived(self):
         if self.progress_type == 'Archived':
             return True

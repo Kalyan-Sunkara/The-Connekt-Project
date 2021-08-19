@@ -1,0 +1,21 @@
+{% extends "firstApp/base3.html" %}
+{% block body_block %}
+<div class="container">
+
+<div class="p-5 mb-4 bg-light rounded-3">
+      <div class="container-fluid py-5">
+        <div class="centerstage">
+          <h3>{{question.title}}</h3>
+          <p>User: {{question.author}}</p>
+          <p>Posted: {{question.created_date}}</p>
+          <p>Price: ${{question.price}}</p>
+          <p>Description: {{question.text}}</p>
+        </div>
+        <div class="container-flex">
+          <a class="btn btn-warning" href="{% url 'firstApp:homeSpecialist' %}">Go Back</a>
+          <button class="btn btn-success" type="button" name="button">Accept</button>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

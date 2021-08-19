@@ -38,10 +38,19 @@ def QuestionDetail(request):
     questions = Question.objects.filter(author=request.user)
     serializer = QuestionSerializer(questions, many=True)
     return Response(serializer.data)
+def default(request):
+    try:
+        user = get_object_or_404(UserProfileInfo, user=request.user)
+        if get_object_or_404(UserProfileInfo, user=request.user).user_type == "Specialist":
+            return redirect("/specialist/")
+        else:
+            return redirect('/user/')
+    except:
+        return redirect("about/")
 
-class HomeViewList(LoginRequiredMixin,ListView):
-    login_url = 'about/'
-    redirect_field_name = 'firstApp/home_list.html'
+class HomeUserViewList(LoginRequiredMixin,ListView):
+    login_url = '/about/'
+    redirect_field_name = ''
     template_name = 'firstApp/home_list.html'
     context_object_name = 'questions'
     model = Question
@@ -50,25 +59,62 @@ class HomeViewList(LoginRequiredMixin,ListView):
              return Question.objects.filter(author=self.request.user)
          else:
              return Question.objects.none()
+
     def get_context_data(self,**kwargs):
-        context = super(HomeViewList,self).get_context_data(**kwargs)
+        context = super(HomeUserViewList,self).get_context_data(**kwargs)
         context['form']=QuestionForm()
         context['active_questions']=Question.objects.filter(progress_type= 'Active',author=self.request.user)
         context['pending_questions']=Question.objects.filter(progress_type= 'Pending', author=self.request.user)
         context['archived_questions']=Question.objects.filter(progress_type= 'Archived', author=self.request.user)
         return context
+
+class HomeSpecialistListView(LoginRequiredMixin,ListView):
+    login_url = '/about/'
+    redirect_field_name = ''
+    template_name = 'firstApp/specialist_list.html'
+    context_object_name = 'questions'
+    model = Question
+    def get_queryset(self):
+         specialist = get_object_or_404(UserProfileInfo,user = self.request.user)
+         if self.request.user.is_authenticated:
+             questions = Question.objects.filter(field_type=specialist.field)
+             return questions.filter(progress_type="Pending")
+         else:
+             return Question.objects.none()
+
 class QuestionDetailView(LoginRequiredMixin,DetailView):
     login_url = 'about/'
     redirect_field_name = 'firstApp/home_list.html'
     template_name = 'firstApp/question_detail.html'
     context_object_name = 'question'
     model = Question
+    def get(self, request, pk):
+        try:
+            profile = get_object_or_404(UserProfileInfo,user=request.user)
+            question = get_object_or_404(Question,pk=pk)
+            if profile.user_type == 'User' and profile.user != question.author:
+                return redirect('/user/')
+            elif profile.user_type == 'Specialist':
+                return redirect('/specialist/')
+            else:
+                self.object = self.get_object()
+                context = self.get_context_data(object=self.object)
+                return self.render_to_response(context)
+        except:
+            return redirect('/user/')
+class QuestionSpecialistDetailView(LoginRequiredMixin, DetailView):
+    login_url = '/about/'
+    redirect_field_name = ''
+    template_name = 'firstApp/specialist_question_detail.html'
+    context_object_name = 'question'
+    model = Question
+
 @login_required
 def archiveQuestion(request, pk):
     question = get_object_or_404(Question,pk=pk)
     question.progress_type = 'Archived'
     question.save()
-    return redirect('/')
+    return redirect('/user/')
 @login_required
 def profileDetails(request, slug):
     if request.user.username == slug:
@@ -78,7 +124,7 @@ def profileDetails(request, slug):
         profile = get_object_or_404(UserProfileInfo,user=request.user)
         return render(request, 'firstApp/profile_detail.html', {'profile': profile})
     else:
-        return redirect('/')
+        return redirect('/user/')
 
 @login_required
 def makeQuestion(request):
@@ -91,11 +137,11 @@ def makeQuestion(request):
             question = question_form.save(commit=False)
             question.author = request.user
             question.save()
-            return redirect('/')
+            return redirect('/user/')
         else:
-            return redirect('/')
+            return redirect('/user/')
     else:
-        return redirect('/')
+        return redirect('/user/')
 def about(request):
     return render(request, 'firstApp/about.html')
 
