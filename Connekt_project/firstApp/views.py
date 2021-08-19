@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from firstApp.forms import UserForm, UserProfileInfoForm, QuestionForm
-from firstApp.models import Question, UserProfileInfo
+from firstApp.models import Question, UserProfileInfo, Rooms
 
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.http import HttpResponseRedirect, HttpResponse
@@ -81,6 +81,12 @@ class HomeSpecialistListView(LoginRequiredMixin,ListView):
              return questions.filter(progress_type="Pending")
          else:
              return Question.objects.none()
+    def get_context_data(self,**kwargs):
+        specialist=get_object_or_404(UserProfileInfo,user=self.request.user)
+        context = super(HomeSpecialistListView,self).get_context_data(**kwargs)
+        context['active_questions']=Question.objects.filter(progress_type= 'Active',field_type=specialist.field)
+        context['pending_questions']=Question.objects.filter(progress_type= 'Pending', field_type=specialist.field)
+        return context
 
 class QuestionDetailView(LoginRequiredMixin,DetailView):
     login_url = 'about/'
@@ -108,6 +114,26 @@ class QuestionSpecialistDetailView(LoginRequiredMixin, DetailView):
     template_name = 'firstApp/specialist_question_detail.html'
     context_object_name = 'question'
     model = Question
+
+@login_required
+def create_room(request, pk):
+    question = get_object_or_404(Question,pk=pk)
+    room = Rooms()
+    room.user = question.author.username
+    room.specialist = request.user.username
+    room.question = question
+    room.slug = room.room_id
+    room.save()
+    question.progress_type = "Active"
+    question.room = room.room_id
+    question.save()
+    return redirect('/specialist/room/{}'.format(room.room_id))
+
+class roomDetailView(LoginRequiredMixin,DetailView):
+    login_url = '/about/'
+    redirect_field_name = ''
+    template_name = "firstApp/room.html"
+    model=Rooms
 
 @login_required
 def archiveQuestion(request, pk):

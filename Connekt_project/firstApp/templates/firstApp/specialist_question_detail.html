@@ -1,4 +1,4 @@
-{% extends "firstApp/base3.html" %}
+{% extends "firstApp/base2.html" %}
 {% block body_block %}
 <div class="container">
 
@@ -13,7 +13,24 @@
         </div>
         <div class="container-flex">
           <a class="btn btn-warning" href="{% url 'firstApp:homeSpecialist' %}">Go Back</a>
-          <button class="btn btn-success" type="button" name="button">Accept</button>
+          <button class="btn btn-success" type="button" name="button" data-bs-toggle="modal" data-bs-target="#exampleModal2">Accept</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal fade" id="exampleModal2" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Are you sure you would like to accept the question?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <a class="btn btn-success" href="{% url 'firstApp:createRoom' pk=question.id%}">Accept</a>
         </div>
       </div>
     </div>

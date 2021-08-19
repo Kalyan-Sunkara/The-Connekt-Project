@@ -19,7 +19,7 @@
             <h3>Active</h3>
             <ul>
               {% for question in active_questions %}
-              <div class="whole-post" onclick="location.href = {{question.id}}">
+              <div class="whole-post" onclick="location.href='{%url 'firstApp:userRoom' slug=question.room %}'">
                 <div class="question-list-item">
               <h4>{{question.title}}</h4>
               </div>

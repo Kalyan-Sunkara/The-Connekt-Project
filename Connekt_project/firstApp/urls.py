@@ -18,5 +18,8 @@ urlpatterns = [
     path('register/',views.register, name="register"),
     path('user/<int:pk>',views.QuestionDetailView.as_view(), name="question-detail"),
     path('specialist/<int:pk>',views.QuestionSpecialistDetailView.as_view(), name="question-detail"),
+    path('specialist/createRoom/<int:pk>',views.create_room, name="createRoom"),
+    path('specialist/room/<slug:slug>',views.roomDetailView.as_view(), name="room"),
+    path('user/room/<slug:slug>',views.roomDetailView.as_view(),name="userRoom"),
     # path('user_login/',views.user_login, name="login")
 ]
