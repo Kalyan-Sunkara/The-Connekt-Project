@@ -4,6 +4,17 @@
 .image-rounded{
   border-radius: 50%;
 }
+.custom-button{
+  height: 38px;
+}
+.positioning-message-form{
+  margin-left: 25%;
+}
+.messaging-input{
+  /* border-radius: 12px; */
+  resize: none;
+  /* width: 50%; */
+}
 header {
   position: relative;
   background-color: black;

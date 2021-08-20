@@ -65,3 +65,10 @@ class Rooms(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True)
     def is_active(self):
         return active
+
+class Messages(models.Model):
+    creator = models.ForeignKey(User,on_delete=models.CASCADE, null=True)
+    creator_name = models.CharField(max_length=200, default="")
+    room = models.ForeignKey(Rooms, on_delete=models.CASCADE, null=True)
+    text = models.TextField()
+    created_date = models.DateTimeField(default=timezone.now)

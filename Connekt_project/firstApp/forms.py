@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from firstApp.models import UserProfileInfo, Question
+from firstApp.models import UserProfileInfo, Question, Messages
 
 class UserForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput())
@@ -25,4 +25,9 @@ class QuestionForm(forms.ModelForm):
             'price':forms.TextInput(),
             'field_type': forms.Select()
             }
+class MessageForm(forms.ModelForm):
+    text = forms.CharField(widget=forms.Textarea(attrs={'class': 'messaging-input form-control', 'rows': 1}), label='')
+    class Meta():
+        model = Messages
+        fields = ('text',)
         # exclude = ['author']

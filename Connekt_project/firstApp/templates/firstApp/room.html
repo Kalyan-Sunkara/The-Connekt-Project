@@ -1,4 +1,49 @@
 {% extends "firstApp/base2.html" %}
 {% block body_block %}
-<h1>ROOM: {{rooms.room_id}}</h1>
+<div class="p-5 mb-4 bg-light rounded-3">
+      <div class="container-fluid py-5">
+        <h3 class="display-5 fw-bold ">Room: {{room.room_id}}</h3>
+        <h3 class="display-5 fw-bold ">Question: {{room.question.title}}</h3>
+        <button id="ajax_button" name="button">lol</button>
+      </div>
+    </div>
+    <div class="p-5 mb-4 bg-light rounded-3">
+          <div class="container-fluid py-5">
+            <div class="container">
+              {% for message in messages %}
+              <p>{{message.creator.username}}: {{message.text}} - {{message.created_date}}</p>
+              {% endfor %}
+            </div>
+            <form>
+            {% csrf_token %}
+            <div class="positioning-message-form input-group mb-3">
+              {{form.as_p}}
+              <button class="btn btn-success custom-button" type="submit" name="button">Send</button>
+            </div>
+            </form>
+          </div>
+        </div>
+        {% block javascript %}
+        <script>
+          $("#ajax_button").click(function () {
+              var main_text;
+              main_text = $('.messaging-input').val()
+              console.log("Hello World");
+          $.ajax({
+            type: "POST",
+            url: '{{room.slug}}/createMessageAPI',
+            data: {
+              'csrfmiddlewaretoken': document.querySelector('input[name="csrfmiddlewaretoken"]').value,
+              'room':'{{room.room_id}}',
+              'text': main_text
+            },
+            dataType: 'json',
+            success: function (data) {
+              console.log(data)
+            }
+          });
+
+      });
+        </script>
+        {% endblock %}
 {% endblock %}

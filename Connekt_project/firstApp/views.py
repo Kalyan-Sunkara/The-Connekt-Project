@@ -1,12 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from firstApp.forms import UserForm, UserProfileInfoForm, QuestionForm
-from firstApp.models import Question, UserProfileInfo, Rooms
+from firstApp.forms import UserForm, UserProfileInfoForm, QuestionForm, MessageForm
+from firstApp.models import Question, UserProfileInfo, Rooms, Messages
 
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse, reverse_lazy
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
@@ -20,7 +20,7 @@ from django.views.generic import (TemplateView, ListView, DetailView, CreateView
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .serializers import QuestionSerializer
+from .serializers import QuestionSerializer, MessagesSerializer
 # from . import forms
 # from firstApp.forms import NewUserForm
 # from firstApp.forms import CreateUserForm
@@ -37,6 +37,28 @@ UserModel = get_user_model()
 def QuestionDetail(request):
     questions = Question.objects.filter(author=request.user)
     serializer = QuestionSerializer(questions, many=True)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+def MessagesForRoom(request,slug):
+    # room = request.GET.get('room',None)
+    main_room=get_object_or_404(Rooms,room_id=slug)
+    messages = Messages.objects.filter(room=main_room)
+    serializer = MessagesSerializer(messages, many=True)
+    return Response(serializer.data)
+
+@api_view(['POST'])
+@login_required
+def createMessageAPI(request,slug):
+    room = request.POST.get('room',None)
+    text = request.POST.get('text',None)
+    message = Messages()
+    message.room = get_object_or_404(Rooms,room_id=room)
+    message.text = text
+    message.creator=request.user
+    message.creator_name=request.user.username
+    message.save()
+    serializer = MessagesSerializer(message, many=False)
     return Response(serializer.data)
 def default(request):
     try:
@@ -133,14 +155,41 @@ class roomDetailView(LoginRequiredMixin,DetailView):
     login_url = '/about/'
     redirect_field_name = ''
     template_name = "firstApp/room.html"
+    context_object_name="room"
     model=Rooms
+    # def get(self, request, slug):
+        # room = get_object_or_404(Rooms,slug=slug)
+        # return redirect('/user/room/{}'.format(slug))
+    def get_context_data(self,**kwargs):
+        context = super(roomDetailView,self).get_context_data(**kwargs)
+        context['form']=MessageForm()
+        context['messages']=Messages.objects.filter(room=context['room'])
+        return context
+@login_required
+def createMessage(request,slug):
+    if request.method == "POST":
+        message_form = MessageForm(data=request.POST)
 
+        if message_form.is_valid():
+            # print(question.id_author)
+            # print(question.author)
+            message = message_form.save(commit=False)
+            message.creator = request.user
+            message.creator_name=message.creator.username
+            message.room = get_object_or_404(Rooms, slug=slug)
+            message.save()
+            return redirect('/user/room/{}'.format(slug))
+        else:
+            return redirect('/user/')
+    else:
+        return redirect('/user/room/<slug:slug>')
 @login_required
 def archiveQuestion(request, pk):
     question = get_object_or_404(Question,pk=pk)
     question.progress_type = 'Archived'
     question.save()
     return redirect('/user/')
+
 @login_required
 def profileDetails(request, slug):
     if request.user.username == slug:
