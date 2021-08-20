@@ -151,7 +151,7 @@ def create_room(request, pk):
     question.save()
     return redirect('/specialist/room/{}'.format(room.room_id))
 
-class roomDetailView(LoginRequiredMixin,DetailView):
+class roomDetailView(UserPassesTestMixin,LoginRequiredMixin,DetailView):
     login_url = '/about/'
     redirect_field_name = ''
     template_name = "firstApp/room.html"
@@ -160,6 +160,12 @@ class roomDetailView(LoginRequiredMixin,DetailView):
     # def get(self, request, slug):
         # room = get_object_or_404(Rooms,slug=slug)
         # return redirect('/user/room/{}'.format(slug))
+    def handle_no_permission(self):
+        return redirect('/')
+
+    def test_func(self):
+        room_obj = self.get_object()
+        return room_obj.valid_user(self.request.user.username)
     def get_context_data(self,**kwargs):
         context = super(roomDetailView,self).get_context_data(**kwargs)
         context['form']=MessageForm()

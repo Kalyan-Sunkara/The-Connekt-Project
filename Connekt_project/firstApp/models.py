@@ -63,6 +63,10 @@ class Rooms(models.Model):
     specialist = models.CharField(max_length=20, default="")
     active = models.BooleanField(default=True)
     question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True)
+    def valid_user(self, user):
+        if user == self.user or user == self.specialist:
+            return True
+        return False 
     def is_active(self):
         return active
 
