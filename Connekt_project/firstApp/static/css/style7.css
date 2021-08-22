@@ -75,3 +75,6 @@ header .overlay {
   padding-left:3%;
   /* padding-bottom: auto; */
 }
+.move-right{
+  text-align: right;
+}

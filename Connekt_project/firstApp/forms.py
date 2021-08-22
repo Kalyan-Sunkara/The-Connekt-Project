@@ -26,7 +26,7 @@ class QuestionForm(forms.ModelForm):
             'field_type': forms.Select()
             }
 class MessageForm(forms.ModelForm):
-    text = forms.CharField(widget=forms.Textarea(attrs={'class': 'messaging-input form-control', 'rows': 1}), label='')
+    text = forms.CharField(widget=forms.Textarea(attrs={'id':'message-send-area','class': 'messaging-input form-control', 'rows': 1}), label='')
     class Meta():
         model = Messages
         fields = ('text',)

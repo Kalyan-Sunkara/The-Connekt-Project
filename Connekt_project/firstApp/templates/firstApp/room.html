@@ -4,45 +4,84 @@
       <div class="container-fluid py-5">
         <h3 class="display-5 fw-bold ">Room: {{room.room_id}}</h3>
         <h3 class="display-5 fw-bold ">Question: {{room.question.title}}</h3>
-        <button id="ajax_button" name="button">lol</button>
+        <!-- <button id="ajax_button" name="button">lol</button> -->
       </div>
     </div>
     <div class="p-5 mb-4 bg-light rounded-3">
           <div class="container-fluid py-5">
-            <div class="container">
+            <div id='chat-box' class="container">
               {% for message in messages %}
               <p>{{message.creator.username}}: {{message.text}} - {{message.created_date}}</p>
               {% endfor %}
             </div>
-            <form>
+            <form id="message-form">
             {% csrf_token %}
             <div class="positioning-message-form input-group mb-3">
               {{form.as_p}}
-              <button class="btn btn-success custom-button" type="submit" name="button">Send</button>
+              <button id="ajax_button" class="btn btn-success custom-button" type="submit" name="button">Send</button>
             </div>
             </form>
           </div>
         </div>
         {% block javascript %}
         <script>
+          var socket = new WebSocket('ws://' + window.location.host + '/ws/{{room.room_id}}/');
+          socket.onmessage = function(event){
+            const data = JSON.parse(event.data);
+            if(data.message){
+              const date = new Date();
+              var hour = date.getHours();
+              var time_identifier = 'a.m.';
+              if(hour > 12){
+                hour = hour-12;
+                time_identifier = 'p.m';
+              }
+              if(data.username != '{{profile.user.username}}'){
+                $('#chat-box').append('<p class="move-right">' + data.username + ': ' + data.message + ' - ' + hour + ':' + date.getMinutes() + ' ' +
+                  time_identifier + '<p>');
+              }
+              else{
+                $('#chat-box').append('<p>' + data.username + ': ' + data.message + ' - ' + hour + ':' + date.getMinutes() + ' ' +
+                  time_identifier + '<p>');
+              }
+            }
+            else {
+              alert('The message was empty!')
+            }
+            console.log('onMessage')
+          }
+          socket.onclose = function(event){
+            console.error('The socket closed unexpeectedly')
+          }
+          $("#message-form").submit(function(e) {
+            e.preventDefault();
+          });
           $("#ajax_button").click(function () {
               var main_text;
               main_text = $('.messaging-input').val()
-              console.log("Hello World");
-          $.ajax({
-            type: "POST",
-            url: '{{room.slug}}/createMessageAPI',
-            data: {
-              'csrfmiddlewaretoken': document.querySelector('input[name="csrfmiddlewaretoken"]').value,
-              'room':'{{room.room_id}}',
-              'text': main_text
-            },
-            dataType: 'json',
-            success: function (data) {
-              console.log(data)
-            }
-          });
-
+              socket.send(JSON.stringify({
+                'message': main_text,
+                'username': '{{profile.user.username}}',
+                'room': '{{room.room_id}}'
+              }));
+              //send message to backend to store message in backend
+              if(main_text != ""){
+                $.ajax({
+                  type: "POST",
+                  url: '{{room.slug}}/createMessageAPI',
+                  data: {
+                    'csrfmiddlewaretoken': document.querySelector('input[name="csrfmiddlewaretoken"]').value,
+                    'room':'{{room.room_id}}',
+                    'text': main_text
+                  },
+                  dataType: 'json',
+                  success: function (data) {
+                    // var html = '<p>'+data['creator_name'] + ': ' + data['text'] + ' - ' + data['created_date'] + '<p>'
+                    // $('#chat-box').append(html);
+                    document.getElementById("message-form").reset();
+                  }
+                });
+              }
       });
         </script>
         {% endblock %}

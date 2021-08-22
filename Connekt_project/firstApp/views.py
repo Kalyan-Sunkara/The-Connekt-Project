@@ -177,8 +177,6 @@ def createMessage(request,slug):
         message_form = MessageForm(data=request.POST)
 
         if message_form.is_valid():
-            # print(question.id_author)
-            # print(question.author)
             message = message_form.save(commit=False)
             message.creator = request.user
             message.creator_name=message.creator.username

@@ -12,6 +12,7 @@ urlpatterns = [
     path('userQuestions',views.QuestionDetail,name='questionDetail'),
     path('user/room/messagesForRoom/<slug:slug>',views.MessagesForRoom,name='messagesForRoom'),
     path('user/room/<slug:slug>/createMessageAPI',views.createMessageAPI,name='createMessageAPI'),
+    path('specialist/room/<slug:slug>/createMessageAPI',views.createMessageAPI,name='createMessageAPI'),
     path('profile/<slug:slug>',views.profileDetails,name="profile"),
     path('makeQuestion',views.makeQuestion,name="makePost"),
     path('archive/<int:pk>',views.archiveQuestion,name="archive"),
