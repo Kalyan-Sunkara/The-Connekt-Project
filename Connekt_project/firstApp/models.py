@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.shortcuts import get_object_or_404
 import string
 import random
 # Create your models here.
@@ -16,6 +17,8 @@ class UserProfileInfo(models.Model):
     user_type = models.CharField(choices=USERTYPE.choices, max_length=10, default="User")
     field = models.CharField(choices=FIELD.choices, max_length=12, default="General")
     slug = models.SlugField(null=True)
+    def get_user(self,username):
+        return get_object_or_404(User,username)
     def get_type(self):
         return self.user.user_type
     def __str__(self):
@@ -66,7 +69,7 @@ class Rooms(models.Model):
     def valid_user(self, user):
         if user == self.user or user == self.specialist:
             return True
-        return False 
+        return False
     def is_active(self):
         return active
 

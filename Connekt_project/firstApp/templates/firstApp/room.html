@@ -2,24 +2,53 @@
 {% block body_block %}
 <div class="p-5 mb-4 bg-light rounded-3">
       <div class="container-fluid py-5">
-        <h3 class="display-5 fw-bold ">Room: {{room.room_id}}</h3>
-        <h3 class="display-5 fw-bold ">Question: {{room.question.title}}</h3>
-        <!-- <button id="ajax_button" name="button">lol</button> -->
+        <h3 class="display-5 fw-bold ">{{room.question.title}}</h3>
+        <p>{{room.question.created_date}}</p>
+        <p>${{room.question.price}}</p>
+        <p>{{room.question.text}}</p>
       </div>
     </div>
     <div class="p-5 mb-4 bg-light rounded-3">
           <div class="container-fluid py-5">
             <div id='chat-box' class="container">
               {% for message in messages %}
-              <p>{{message.creator.username}}: {{message.text}} - {{message.created_date}}</p>
+                {% if message.creator.username == profile.user.username %}
+                  <div class="message-total-display-2">
+                    <!-- <p class="messages-left">{{message.creator.username}}</p> -->
+                    {%if profile.profile_pic %}
+                    <img class="image-left image-rounded" height="30px" width="30px" src="{{profile.profile_pic.url}}" alt="">
+                    {%else%}
+                    <i class="messages-left bi-person-circle h2"></i>
+                    {%endif%}
+                    <p class="messages-left"><span class="message-styling">{{message.text}} - {{message.created_date}}</span></p>
+                  </div>
+                {% else %}
+                <div class="message-total-display">
+                  <p class="messages-right"><span class="message-styling-2">{{message.text}} - {{message.created_date}}</span></p>
+                  <!-- <p class="messages-right">{{message.creator.username}}</p> -->
+                  {%if profile.profile_pic %}
+                    {%if profile.user_type == 'User' %}
+                    <img class="image-right image-rounded" height="30px" width="30px" src="{{specialist.profile_pic.url}}" alt="">
+                    {%else%}
+                    <img class="image-right image-rounded" height="30px" width="30px" src="{{regular.profile_pic.url}}" alt="">
+                    {%endif%}
+                  {%else%}
+                  <i class="messages-right bi-person-circle h2"></i>
+                  {%endif%}
+                </div>
+                {% endif %}
               {% endfor %}
             </div>
             <form id="message-form">
             {% csrf_token %}
-            <div class="positioning-message-form input-group mb-3">
-              {{form.as_p}}
-              <button id="ajax_button" class="btn btn-success custom-button" type="submit" name="button">Send</button>
-            </div>
+            <!-- <div class="positioning-message-form"> -->
+              <div class="input-group mb-3 positioning-message-form">
+                {{form.as_p}}
+                <div class="input-group-append">
+                <button id="ajax_button" class="btn btn-success custom-button" type="submit" name="button">Send</button>
+                </div>
+              </div>
+            <!-- </div> -->
             </form>
           </div>
         </div>
@@ -31,18 +60,37 @@
             if(data.message){
               const date = new Date();
               var hour = date.getHours();
+              var minutes = date.getMinutes();
               var time_identifier = 'a.m.';
+              if(minutes < 10){
+                minutes = '0' + minutes.toString();
+              }
               if(hour > 12){
                 hour = hour-12;
                 time_identifier = 'p.m';
               }
               if(data.username != '{{profile.user.username}}'){
-                $('#chat-box').append('<p class="move-right">' + data.username + ': ' + data.message + ' - ' + hour + ':' + date.getMinutes() + ' ' +
-                  time_identifier + '<p>');
+                $('#chat-box').append('<div class="message-total-display">' +
+                  '<p class="messages-right"><span class="message-styling-2">' + data.message + ' - ' + hour + ':' + minutes + ' ' + time_identifier +
+                    '</span></p>'+
+                    {% if profile.user_type == 'User' and regular.profile_pic%}
+                    '<img class="image-right image-rounded"src="{{specialist.profile_pic.url}}" height="30px" width="30px" alt="">'
+                    {% elif profile.user_type == 'Specialist' and specialist.profile_pic%}
+                    '<img class="image-right image-rounded" src="{{regular.profile_pic.url}}" height="30px" width="30px" alt="">'
+                    {%else%}
+                    '<i class="image-right bi-person-circle h2"></i>'
+                    {% endif %}
+                    + '</div>');
               }
               else{
-                $('#chat-box').append('<p>' + data.username + ': ' + data.message + ' - ' + hour + ':' + date.getMinutes() + ' ' +
-                  time_identifier + '<p>');
+                $('#chat-box').append('<div>'+
+                  {% if profile.profile_pic%}
+                  '<img class="image-left image-rounded" src="{{profile.profile_pic.url}}" height="30px" width="30px" alt="">'
+                  {%else%}
+                  '<i class="image-left bi-person-circle h2"></i>'
+                  {% endif %}
+                  + '<p class="image-left"><span class="message-styling">' + data.message + ' - ' + hour + ':' + minutes + ' ' +
+                  time_identifier + '</span></p></div>');
               }
             }
             else {

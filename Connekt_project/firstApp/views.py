@@ -3,6 +3,7 @@ from firstApp.forms import UserForm, UserProfileInfoForm, QuestionForm, MessageF
 from firstApp.models import Question, UserProfileInfo, Rooms, Messages
 
 from django.contrib.auth import authenticate, login, logout, get_user_model
+from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse, reverse_lazy
 from django.contrib.auth.decorators import login_required
@@ -167,9 +168,16 @@ class roomDetailView(UserPassesTestMixin,LoginRequiredMixin,DetailView):
         room_obj = self.get_object()
         return room_obj.valid_user(self.request.user.username)
     def get_context_data(self,**kwargs):
+        room_obj = self.get_object()
+        specialist_temp = get_object_or_404(User,username=room_obj.specialist)
+        regular_temp = get_object_or_404(User,username=room_obj.user)
+        specialist = get_object_or_404(UserProfileInfo,user=specialist_temp)
+        regular = get_object_or_404(UserProfileInfo,user=regular_temp)
         context = super(roomDetailView,self).get_context_data(**kwargs)
         context['form']=MessageForm()
         context['messages']=Messages.objects.filter(room=context['room'])
+        context['regular']=regular
+        context['specialist']=specialist
         return context
 @login_required
 def createMessage(request,slug):
