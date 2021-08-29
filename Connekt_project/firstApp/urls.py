@@ -25,5 +25,6 @@ urlpatterns = [
     path('specialist/room/<slug:slug>',views.roomDetailView.as_view(), name="room"),
     path('user/room/<slug:slug>',views.roomDetailView.as_view(),name="userRoom"),
     path('user/room/<slug:slug>/createMessage',views.createMessage,name="createMessage"),
+    path('dispute/<int:pk>',views.disputeQuestionAPI,name="dispute"),
     # path('user_login/',views.user_login, name="login")
 ]

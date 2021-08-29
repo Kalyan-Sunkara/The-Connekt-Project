@@ -39,36 +39,82 @@
                 {% endif %}
               {% endfor %}
             </div>
-            <form id="message-form">
-            {% csrf_token %}
-            <!-- <div class="positioning-message-form"> -->
-              <div class="input-group mb-3 positioning-message-form">
-                {{form.as_p}}
-                <div class="input-group-append">
-                <button id="ajax_button" class="btn btn-success custom-button" type="submit" name="button">Send</button>
+            <div id="end-of-room" class="">
+              {%if room.question.check_disputed%}
+              <h4>Question Has Been Disputed! Chat will be reviewed and update will be posted!</h4>
+              {%else%}
+              <form id="message-form">
+              {% csrf_token %}
+              <!-- <div class="positioning-message-form"> -->
+                <div class="input-group mb-3 positioning-message-form">
+                  {{form.as_p}}
+                  <div class="input-group-append">
+                  <button id="ajax_button" class="btn btn-success custom-button" type="submit" name="button"><i class="bi bi-arrow-up"></i></button>
+                  <button type="button" class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      <span class="sr-only"></span>
+                    </button>
+                    <div class="dropdown-menu">
+                      <a class="dropdown-item" href="#">Insert Attachment</a>
+                      <a class="dropdown-item" href="#">Another action</a>
+                      <a class="dropdown-item" href="#">Something else here</a>
+                      <div role="separator" class="dropdown-divider"></div>
+                      <a class="dropdown-item" href="#">Separated link</a>
+                    </div>
+                  </div>
+                </div>
+              <!-- </div> -->
+              </form>
+              <div class="container">
+                {% if profile.user_type == 'User'%}
+                <h4>Has Your Question Been Answered?</h4>
+                {% else %}
+                <h4>Have You Answered the Question?</h4>
+                {%endif%}
+                <div class="">
+                  <button type="button" name="button" class="btn btn-success">Yes</button>
+                  <button id="dispute_button" class="btn btn-danger" type="submit" name="button">No</button>
                 </div>
               </div>
-            <!-- </div> -->
-            </form>
+              {%endif%}
+            </div>
           </div>
         </div>
+
+
+
+
+
+
+
+
+
+
+
+
         {% block javascript %}
         <script>
+          //create new websocket connection when room page is visited
           var socket = new WebSocket('ws://' + window.location.host + '/ws/{{room.room_id}}/');
+
+          //handles new messages in websocket room group
           socket.onmessage = function(event){
             const data = JSON.parse(event.data);
             if(data.message){
+              //gets current date
               const date = new Date();
               var hour = date.getHours();
               var minutes = date.getMinutes();
               var time_identifier = 'a.m.';
+              //makes sure to add extra 0 so time looks correct
               if(minutes < 10){
                 minutes = '0' + minutes.toString();
               }
+              //converts from military time
               if(hour > 12){
                 hour = hour-12;
                 time_identifier = 'p.m';
               }
+              //handles a message that comes from the other user. Ensures styling is similar to the preloaded messages
               if(data.username != '{{profile.user.username}}'){
                 $('#chat-box').append('<div class="message-total-display">' +
                   '<p class="messages-right"><span class="message-styling-2">' + data.message + ' - ' + hour + ':' + minutes + ' ' + time_identifier +
@@ -82,6 +128,7 @@
                     {% endif %}
                     + '</div>');
               }
+              //handles a message that comes from the user. Ensures styling is similar to the preloaded messages
               else{
                 $('#chat-box').append('<div>'+
                   {% if profile.profile_pic%}
@@ -98,12 +145,19 @@
             }
             console.log('onMessage')
           }
+
+          //Handles closing the WebSocket connection when a user leaves the room page
           socket.onclose = function(event){
             console.error('The socket closed unexpeectedly')
           }
+
+
           $("#message-form").submit(function(e) {
             e.preventDefault();
           });
+
+
+
           $("#ajax_button").click(function () {
               var main_text;
               main_text = $('.messaging-input').val()
@@ -130,7 +184,21 @@
                   }
                 });
               }
-      });
+            });
+
+          $("#dispute_button").click(function(){
+            $.ajax({
+              type: "POST",
+              url: '/dispute/{{room.question.id}}',
+              data: {
+                'csrfmiddlewaretoken': document.querySelector('input[name="csrfmiddlewaretoken"]').value,
+              },
+              dataType: 'json',
+              success: function (data) {
+                $("#end-of-room").html('<h4>Question Has Been Disputed! Chat will be reviewed and update will be posted!</h4>')
+              }
+            });
+          })
         </script>
         {% endblock %}
 {% endblock %}

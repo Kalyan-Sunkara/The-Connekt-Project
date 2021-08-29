@@ -57,6 +57,20 @@
               {% endfor %}
             </ol>
           </div>
+          <h1 class="display-5 fw-bold color-me">Disputed</h1>
+          <div class="centerstage">
+            <ul>
+              {% for question in disputed_questions %}
+              <div class="whole-post" onclick="location.href = '{%url 'firstApp:room' slug=question.room %}'">
+                <div class="question-list-item">
+              <h4>{{question.title}}</h4>
+              </div>
+              </div>
+              {%empty%}
+              <p>No Questions!</p>
+              {% endfor %}
+            </ul>
+          </div>
         </div>
       </div>
     </div>

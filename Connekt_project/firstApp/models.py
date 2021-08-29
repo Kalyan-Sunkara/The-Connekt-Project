@@ -25,7 +25,7 @@ class UserProfileInfo(models.Model):
         return self.user.username
 
 class Question(models.Model):
-    PROGRESSTYPE = models.TextChoices('PROGRESSTYPE', 'Active Pending Archived')
+    PROGRESSTYPE = models.TextChoices('PROGRESSTYPE', 'Active Pending Archived Disputed')
     FIELDTYPE = models.TextChoices('FIELDTYPE', 'Medical Engineering Education Home General')
     title = models.CharField(max_length=200)
     author = models.ForeignKey('auth.User', on_delete=models.CASCADE, null=True)
@@ -36,6 +36,12 @@ class Question(models.Model):
     progress_type = models.CharField(choices=PROGRESSTYPE.choices, max_length=12, default="Pending")
     room = models.CharField(max_length=6, default="")
 
+    def dispute(self):
+        self.progress_type = 'Disputed'
+    def check_disputed(self):
+        if self.progress_type == 'Disputed':
+            return True
+        return False
     def same_user(self, newAuthor):
         if self.author != newAuthor:
             return False

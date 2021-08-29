@@ -19,6 +19,8 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 
 from django.views.generic import (TemplateView, ListView, DetailView, CreateView, UpdateView, DeleteView)
 
+from rest_framework import status
+from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .serializers import QuestionSerializer, MessagesSerializer
@@ -40,27 +42,55 @@ def QuestionDetail(request):
     serializer = QuestionSerializer(questions, many=True)
     return Response(serializer.data)
 
+#API METHOD TO LOAD MESSAGES INTO CHAT ROOM
 @api_view(['GET'])
 def MessagesForRoom(request,slug):
     # room = request.GET.get('room',None)
-    main_room=get_object_or_404(Rooms,room_id=slug)
-    messages = Messages.objects.filter(room=main_room)
-    serializer = MessagesSerializer(messages, many=True)
-    return Response(serializer.data)
+    try:
+        main_room=get_object_or_404(Rooms,room_id=slug)
+        if main_room.user != request.user.username and main_room.specialist.username != request.user:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        messages = Messages.objects.filter(room=main_room)
+        serializer = MessagesSerializer(messages, many=True)
+        return Response(serializer.data)
+    except:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
+#API METHOD TO CREATE MESSAGES IN DATABASE/ makes sure only user can do the request
 @api_view(['POST'])
 @login_required
 def createMessageAPI(request,slug):
     room = request.POST.get('room',None)
     text = request.POST.get('text',None)
-    message = Messages()
-    message.room = get_object_or_404(Rooms,room_id=room)
-    message.text = text
-    message.creator=request.user
-    message.creator_name=request.user.username
-    message.save()
-    serializer = MessagesSerializer(message, many=False)
+    try:
+        newRoom = get_object_or_404(Rooms,room_id=room)
+        if newRoom.user != request.user.username and newRoom.specialist.username != request.user:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        else:
+            message = Messages()
+            message.room = newRoom
+            message.text = text
+            message.creator=request.user
+            message.creator_name=request.user.username
+            message.save()
+            serializer = MessagesSerializer(message, many=False)
+            return Response(serializer.data)
+    except:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@login_required
+def disputeQuestionAPI(request,pk):
+    try:
+        question = Question.objects.get(pk=pk)
+    except:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+    question.dispute()
+    question.save()
+    serializer = QuestionSerializer(question, many=False)
     return Response(serializer.data)
+
 def default(request):
     try:
         user = get_object_or_404(UserProfileInfo, user=request.user)
@@ -89,7 +119,10 @@ class HomeUserViewList(LoginRequiredMixin,ListView):
         context['active_questions']=Question.objects.filter(progress_type= 'Active',author=self.request.user)
         context['pending_questions']=Question.objects.filter(progress_type= 'Pending', author=self.request.user)
         context['archived_questions']=Question.objects.filter(progress_type= 'Archived', author=self.request.user)
+        context['disputed_questions']=Question.objects.filter(progress_type= 'Disputed', author=self.request.user)
         return context
+
+
 
 class HomeSpecialistListView(LoginRequiredMixin,ListView):
     login_url = '/about/'
@@ -109,7 +142,10 @@ class HomeSpecialistListView(LoginRequiredMixin,ListView):
         context = super(HomeSpecialistListView,self).get_context_data(**kwargs)
         context['active_questions']=Question.objects.filter(progress_type= 'Active',field_type=specialist.field)
         context['pending_questions']=Question.objects.filter(progress_type= 'Pending', field_type=specialist.field)
+        context['disputed_questions']=Question.objects.filter(progress_type= 'Disputed', field_type=specialist.field)
         return context
+
+
 
 class QuestionDetailView(LoginRequiredMixin,DetailView):
     login_url = 'about/'
@@ -131,12 +167,16 @@ class QuestionDetailView(LoginRequiredMixin,DetailView):
                 return self.render_to_response(context)
         except:
             return redirect('/user/')
+
+
 class QuestionSpecialistDetailView(LoginRequiredMixin, DetailView):
     login_url = '/about/'
     redirect_field_name = ''
     template_name = 'firstApp/specialist_question_detail.html'
     context_object_name = 'question'
     model = Question
+
+
 
 @login_required
 def create_room(request, pk):
@@ -179,6 +219,8 @@ class roomDetailView(UserPassesTestMixin,LoginRequiredMixin,DetailView):
         context['regular']=regular
         context['specialist']=specialist
         return context
+
+
 @login_required
 def createMessage(request,slug):
     if request.method == "POST":
@@ -195,9 +237,13 @@ def createMessage(request,slug):
             return redirect('/user/')
     else:
         return redirect('/user/room/<slug:slug>')
+
+
 @login_required
 def archiveQuestion(request, pk):
     question = get_object_or_404(Question,pk=pk)
+    if request.user != question.author:
+        return redirect('/')
     question.progress_type = 'Archived'
     question.save()
     return redirect('/user/')
@@ -211,7 +257,7 @@ def profileDetails(request, slug):
         profile = get_object_or_404(UserProfileInfo,user=request.user)
         return render(request, 'firstApp/profile_detail.html', {'profile': profile})
     else:
-        return redirect('/user/')
+        return redirect('/')
 
 @login_required
 def makeQuestion(request):
@@ -229,8 +275,11 @@ def makeQuestion(request):
             return redirect('/user/')
     else:
         return redirect('/user/')
+
+
 def about(request):
     return render(request, 'firstApp/about.html')
+
 
 def register(request):
 
